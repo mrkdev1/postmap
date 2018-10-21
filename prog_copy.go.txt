@@ -1,0 +1,41 @@
+package main
+
+import (
+    "bytes"
+    "fmt"
+    "net/http"
+)
+
+func main() {
+    url := "https://api.github.com/gists"
+
+	str := `{
+                "description": "A (secret) gist",
+                "public": false,
+                "files": {
+                        "file1.geojson": { "content":"{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-119.813148,45.886312]},\"properties\":{\"marker-size\":\"small\"}},{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[-122.38713,47.669809]},\"properties\":{\"marker-size\":\"small\"}}]}"
+                        }
+                    }
+                }`
+	
+    var jsonStr = []byte(str)
+         
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+    req.Header.Set("Authorization", "token ---PERSONAL-TOKEN---") // The token
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+    defer resp.Body.Close()
+
+    if resp.Status == "201 Created" {
+        fmt.Println("Success")
+        fmt.Println("Go to the following address to access the secret gist")
+        fmt.Println(resp.Header.Get("Location"))
+    } else {
+        fmt.Println("Failed creating secret gist")
+    }
+}
